@@ -1,0 +1,42 @@
+const Product=require('../models/products');
+const path=require('path');
+const fs=require('fs');
+
+
+  exports.showproducts=(req,res,next)=>{
+    Product.fetch(arr=>{
+      res.render('shop/product-list',{
+        prods:  arr,
+        pageTitle:"All Products",
+        path:"/products"
+      });
+    });
+  
+  }
+  exports.getIndex=(req,res,next)=>{
+    Product.fetch(arr=>{
+      res.render('shop/index',{
+        prods:  arr,
+        pageTitle:"shop",
+        path:"/shop"
+      });
+    });
+  }
+  exports.getcart=(req,res,next)=>{
+    res.render('shop/cart',
+  {
+    path:'/cart',
+    pageTitle:'Your cart'
+  });
+  }
+  exports.getcheeckout=(req,res,next)=>{
+    res.render('shop/cheeckout',
+  {
+    path:'/cheeckout',
+    pageTitle:"cheeckout"
+  });
+  }
+
+
+
+  
