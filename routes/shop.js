@@ -4,6 +4,8 @@ const router = express.Router();
 
 router.get('/shop', shopController.getIndex);  // Use getProducts method from productsController
 router.get('/products',shopController.showproducts);
-router.get('/cart',shopController.getcart);  // Use getProducts method from productsController
+router.get('/products/:productID',shopController.getProduct);
+router.get('/cart',shopController.getcart);  
+router.post('/cart',shopController.postcart); // Use getProducts method from productsController
 router.get('/cheeckout',shopController.getcheeckout);
 module.exports = router;
