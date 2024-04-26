@@ -13,7 +13,8 @@ const getProductfromfile = (cb) => {
     })
 }
 module.exports = class {
-    constructor(title, price, imageUrl, description) {
+    constructor(id,title, price, imageUrl, description) {
+        this.id=id;
         this.title = title;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -23,20 +24,40 @@ module.exports = class {
 
 
     save() {
-        this.id = Math.random().toString();
-
-        fs.readFile(p, (err, data) => {
-            let arr = [];
-            if (!err) {
-                arr = JSON.parse(data);
-            }
-            arr.push(this);
-            fs.writeFile(p, JSON.stringify(arr), (err) => {
-                if (err) {
-                    console.log(err);
+        if(this.id)
+        {
+            getProductfromfile((products)=>{
+                for(let i=0;i<products.length;i++)
+                if(this.id===products[i].id)
+                {
+                    products[i]=this;
+                    break;
                 }
+                fs.writeFile(p,JSON.stringify(products),(err)=>{
+                    if(err)
+                    console.log(err);
+                });
             })
-        })
+        }
+        else
+        {
+            
+            this.id = Math.random().toString();
+
+            fs.readFile(p, (err, data) => {
+                let arr = [];
+                if (!err) {
+                    arr = JSON.parse(data);
+                }
+                arr.push(this);
+                fs.writeFile(p, JSON.stringify(arr), (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                })
+            })
+        }
+     
     }
     static fetch(cb) {
         getProductfromfile(cb);
