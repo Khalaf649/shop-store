@@ -3,12 +3,10 @@ const path = require('path');
 const fs = require('fs');
 
 exports.getaddproduct = (req, res, next) => {
-  res.render('admin/add-product', {
+  res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/addproduct',
-    formsCSS: true,
-    productCSS: true,
-    activeAddProduct: true
+   
   });
 }
 exports.postaddproduct = (req, res, next) => {
@@ -16,6 +14,13 @@ exports.postaddproduct = (req, res, next) => {
   console.log(x);
   x.save();
   res.redirect('/shop');
+}
+exports.geteditproduct = (req, res, next) => {
+  res.render('admin/edit-product', {
+    pageTitle: 'Add Product',
+    path: '/admin/addproduct',
+   
+  });
 }
 exports.getproducts = (req, res, next) => {
   Product.fetch(arr => {
