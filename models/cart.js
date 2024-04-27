@@ -56,13 +56,26 @@ module.exports = class Cart {
                     break;
                 }
             }
+            if(search===-1)
+            return;
+            
             cart.TotalPrice-=cart.prods[search].TotalPrice;
             cart.TotalQuantity-=cart.prods[search].qty;
             cart.prods.splice(search, 1);
+            
             fs.writeFile(p,JSON.stringify(cart),(err)=>{
                 if(err)
                 console.log(err);
             })
+        })
+    }
+    static fetch(cb)
+    {
+        fs.readFile(p,(err,data)=>{
+            if(err)
+            cb(null);
+        else
+        cb(JSON.parse(data));
         })
     }
 }

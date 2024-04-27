@@ -1,7 +1,7 @@
 const Product = require('../models/products');
 const path = require('path');
 const fs = require('fs');
-const cart=require('../models/cart');
+const Cart=require('../models/cart');
 
 exports.showproducts = (req, res, next) => {
   Product.fetch(arr => {
@@ -26,18 +26,12 @@ exports.getIndex = (req, res, next) => {
 exports.postcart=(req,res,next)=>{
 const id=req.body.productId;
 Product.FindById(id,(prodx)=>{
-  cart.addProduct(id,prodx.price)
+  Cart.addProduct(id,prodx.price)
 })
 res.redirect('/cart');
 
 }
-exports.getcart = (req, res, next) => {
-  res.render('shop/cart',
-    {
-      path: '/cart',
-      pageTitle: 'Your cart'
-    });
-}
+
 exports.getcheeckout = (req, res, next) => {
   res.render('shop/cheeckout',
     {
@@ -63,7 +57,39 @@ res.render('shop/product-detail',
 
 }
   
+exports.getcart=(req,res,next)=>{
+  Cart.fetch((cart)=>{
+    Product.fetch((products)=>{
+      const ans=[];
+       for(var i=0;i<cart.prods.length;i++)
+       {
+            for(var j=0;j<products.length;j++)
+            {
+              if(cart.prods[i].id===products[j].id)
+              {
+                ans.push(
+                  {
+                    product:products[j],
+                    qty:cart.prods[i].qty,
+                    price:cart.prods[i].TotalPrice
 
+                  }
+                )
+              }
+            }
+       }
+       res.render('shop/cart',
+      {
+        pageTitle :"Your Cart",
+        path:"/cart",
+        products :ans
+      });
+    })
+  })
+}
 
-
+exports.postDeleteCart=(req,res,next)=>{
+  Cart.DeleteByid(req.body.productId);
+  res.redirect('/shop');
+}
 

@@ -1,4 +1,28 @@
 <%- include('../includes/head.ejs') %>
-    
-        <%- include('../includes/navigation.ejs') %>
-        <%- include('../includes/end.ejs') %>
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <% if (products.length > 0) { %>
+            <div class="product-container">
+                <% products.forEach(p => { %>
+                    <div class="product-box">
+                        <img src="<%= p.product.imageUrl %>" alt="<%= p.product.title %>" class="product-image">
+                        <div class="product-details">
+                            <h2><%= p.product.title %></h2>
+                            <p>Quantity: <%= p.qty %></p>
+                            <p>Total Price: <%= p.price %></p>
+                            <form action="/cart-delete-item" method="POST">
+                                <input type="hidden" value="<%= p.product.id %>" name="productId">
+                                <button class="btn" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <h1>No Products in Cart!</h1>
+        <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>
+</body>
