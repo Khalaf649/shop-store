@@ -56,3 +56,11 @@ exports.getproducts = (req, res, next) => {
     });
   });
 }
+exports.postDeleteProduct=(req,res,next)=>{
+  
+  const id=req.body.productId;
+  Product.DeleteByid(id);
+ 
+
+  res.redirect('/shop');
+}

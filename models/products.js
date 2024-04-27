@@ -73,5 +73,17 @@ module.exports = class {
         });
 
     }
+  static DeleteByid(id){
+   getProductfromfile((products)=>{
+products=products.filter((prod)=>{
+    prod.id!==id;
+})
+fs.writeFile(p,JSON.stringify(products),(err)=>{
+    if(err)
+    console.log(err);
+});
+
+   });
+  }
 
 };
