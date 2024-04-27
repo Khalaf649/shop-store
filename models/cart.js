@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const product = require('../models/products');
 const maindir = require('../util/path');
+const { json } = require('body-parser');
 let p = path.join(maindir, 'data', 'cart.json');
 
 module.exports = class Cart {
@@ -12,7 +13,7 @@ module.exports = class Cart {
                 cart = JSON.parse(data);
             }
             let search = -1;
-            for (let i = 0; i <cart.prods.length; i++) {
+            for (let i = 0; i < cart.prods.length; i++) {
                 if (cart.prods[i].id === id) {
                     search = i;
                     break;
@@ -38,5 +39,30 @@ module.exports = class Cart {
                 }
             });
         });
+    }
+    static DeleteByid(id) {
+        fs.readFile(p, (err, data) => {
+            let cart = { prods: [], TotalPrice: 0, TotalQuantity: 0 };
+            if (!err)
+            cart=JSON.parse(data)
+             
+            let search = -1;
+            
+    
+            for (var i = 0;i<cart.prods.length; i++) {
+                if (cart.prods[i].id === id)
+                {
+                    search = i;
+                    break;
+                }
+            }
+            cart.TotalPrice-=cart.prods[search].TotalPrice;
+            cart.TotalQuantity-=cart.prods[search].qty;
+            cart.prods.splice(search, 1);
+            fs.writeFile(p,JSON.stringify(cart),(err)=>{
+                if(err)
+                console.log(err);
+            })
+        })
     }
 }

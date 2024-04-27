@@ -59,6 +59,7 @@ exports.getproducts = (req, res, next) => {
 exports.postDeleteProduct=(req,res,next)=>{
   
   const id=req.body.productId;
+  console.log(id);
   Product.DeleteByid(id);
  
 

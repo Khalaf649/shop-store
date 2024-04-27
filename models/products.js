@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const maindir = require('../util/path');
+const Cart=require('./cart');
 let p = path.join(maindir, 'data', 'products.json');
 
 const { json } = require('body-parser');
@@ -16,7 +17,7 @@ module.exports = class {
     constructor(id,title, price, imageUrl, description) {
         this.id=id;
         this.title = title;
-        this.price = price;
+        this.price = Number(price);
         this.imageUrl = imageUrl;
         this.description = description;
 
@@ -76,11 +77,11 @@ module.exports = class {
   static DeleteByid(id){
    getProductfromfile((products)=>{
 products=products.filter((prod)=>{
-    prod.id!==id;
+    return prod.id!==id;
 })
 fs.writeFile(p,JSON.stringify(products),(err)=>{
-    if(err)
-    console.log(err);
+    if(!err)
+    Cart.DeleteByid(id);
 });
 
    });
