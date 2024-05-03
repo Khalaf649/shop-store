@@ -1,18 +1,9 @@
-const path = require('path');
-const fs = require('fs');
-const maindir = require('../util/path');
+
 const Cart=require('./cart');
-let p = path.join(maindir, 'data', 'products.json');
+const db=require('../util/database');
 
 const { json } = require('body-parser');
-const getProductfromfile = (cb) => {
-    fs.readFile(p, (err, data) => {
-        if (err)
-            cb([]);
-        else
-            cb(JSON.parse(data));
-    })
-}
+
 module.exports = class {
     constructor(id,title, price, imageUrl, description) {
         this.id=id;
@@ -25,66 +16,21 @@ module.exports = class {
 
 
     save() {
-        if(this.id)
-        {
-            getProductfromfile((products)=>{
-                for(let i=0;i<products.length;i++)
-                if(this.id===products[i].id)
-                {
-                    products[i]=this;
-                    break;
-                }
-                fs.writeFile(p,JSON.stringify(products),(err)=>{
-                    if(err)
-                    console.log(err);
-                });
-            })
-        }
-        else
-        {
-            
-            this.id = Math.random().toString();
-
-            fs.readFile(p, (err, data) => {
-                let arr = [];
-                if (!err) {
-                    arr = JSON.parse(data);
-                }
-                arr.push(this);
-                fs.writeFile(p, JSON.stringify(arr), (err) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                })
-            })
-        }
-     
+        // Execute the INSERT query with parameters using the connection pool
+        return db('INSERT INTO products (title, price, describtion, imageUrl) VALUES (?, ?, ?, ?)', [
+            this.title,
+            this.price,
+            this.description,
+            this.imageUrl
+        ]);
     }
-    static fetch(cb) {
-        getProductfromfile(cb);
-
+    static fetch() {
+  
+        return db('Select *from products')
 
     }
-    static FindById(id,cb) {
-        
-        getProductfromfile((products) => {
-            for (let i = 0; i < products.length ; i++)
-                if (products[i].id === id)
-                     cb(products[i]);
-        });
-
+    static FindById(id) {
+        return db('SELECT * FROM products WHERE id =?',id);
     }
-  static DeleteByid(id){
-   getProductfromfile((products)=>{
-products=products.filter((prod)=>{
-    return prod.id!==id;
-})
-fs.writeFile(p,JSON.stringify(products),(err)=>{
-    if(!err)
-    Cart.DeleteByid(id);
-});
-
-   });
-  }
 
 };

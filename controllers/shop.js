@@ -4,24 +4,31 @@ const fs = require('fs');
 const Cart=require('../models/cart');
 
 exports.showproducts = (req, res, next) => {
-  Product.fetch(arr => {
-    res.render('shop/product-list', {
-      prods: arr,
-      pageTitle: "All Products",
-      path: "/products"
-    });
-  });
-  
+ 
+  Product.fetch().then((data)=>{
+res.render('shop/product-list',{
+  prods:data,
+      pageTitle:'Products',
+      path:'/product'
+})
+  }).catch(err=>{
+    console.log(err);
+  })
 
 }
+
 exports.getIndex = (req, res, next) => {
-  Product.fetch(arr => {
-    res.render('shop/index', {
-      prods: arr,
-      pageTitle: "shop",
-      path: "/shop"
-    });
-  });
+  Product.fetch().then((data)=>{
+    console.log(data);
+    res.render('shop/index',{
+      prods:data,
+      pageTitle:'Shop',
+      path:'/shop'
+    })
+  }).catch((err)=>{
+    console.log(err);
+  })
+
 }
 exports.postcart=(req,res,next)=>{
 const id=req.body.productId;
@@ -42,16 +49,20 @@ exports.getcheeckout = (req, res, next) => {
 exports.getProduct = (req, res, next) => {
   const productID = req.params.productID;
   
-   
- Product.FindById(productID,(prodx)=>{
-res.render('shop/product-detail',
-{
-  pageTitle:"Deatils",
-  product:prodx,
-  path:"/products"
-});
+   Product.FindById(productID).then((data)=>{
+    console.log(data);
+    res.render('shop/product-detail',
+    {
+      
+      pageTitle:"Deatils",
+      product:data[0],
+      path:"/products"
+    });
+   }).catch((err)=>{
+    if(err)
+      console.log(err);
+   })
 
- })
   
  
 
@@ -82,7 +93,10 @@ exports.getcart=(req,res,next)=>{
       {
         pageTitle :"Your Cart",
         path:"/cart",
-        products :ans
+        products :ans,
+        TotalPrice:cart.TotalPrice,
+        TotalQuantity:cart.TotalQuantity
+
       });
     })
   })

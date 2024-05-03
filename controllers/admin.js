@@ -23,12 +23,27 @@ exports.PostEditProduct=(req,res,next)=>{
 
 }
 exports.postaddproduct = (req, res, next) => {
-  x = new Product(null,req.body.title, req.body.price, req.body.imageUrl, req.body.description);
-  //console.log("khalaf");
-  x.save();
-  console.log(x);
-  res.redirect('/shop');
-}
+  const product = new Product(
+      null,
+      req.body.title,
+      req.body.price,
+      req.body.imageUrl,
+      req.body.description
+  );
+
+  console.log('New product:', product);
+
+  product.save()
+      .then((data) => {
+          console.log('Product saved:', data);
+          res.redirect('/shop');
+      })
+      .catch((err) => {
+          console.error('Error saving product:', err);
+          res.status(500).send('Failed to save product');
+      });
+};
+
 exports.geteditproduct = (req, res, next) => {
   const productId=req.params.productId;// dynamic segment
   const EditMode=req.query.edit // key parameter
@@ -48,13 +63,19 @@ exports.geteditproduct = (req, res, next) => {
   
 }
 exports.getproducts = (req, res, next) => {
-  Product.fetch(arr => {
+  Product.fetch().then((data)=>{
     res.render('admin/product-list', {
-      prods: arr,
+      prods: data,
       pageTitle: "Admin products",
       path: "/admin/products"
     });
-  });
+  }).catch((err)=>{
+    if(err)
+      console.log(err);
+  })
+
+    
+ 
 }
 exports.postDeleteProduct=(req,res,next)=>{
   
