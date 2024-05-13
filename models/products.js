@@ -1,36 +1,29 @@
+const Sequelize = require('sequelize');
+const sequelize = require('../util/database');
 
-const Cart=require('./cart');
-const db=require('../util/database');
-
-const { json } = require('body-parser');
-
-module.exports = class {
-    constructor(id,title, price, imageUrl, description) {
-        this.id=id;
-        this.title = title;
-        this.price = Number(price);
-        this.imageUrl = imageUrl;
-        this.description = description;
-
+const Product = sequelize.define('product', {
+    id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    title: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    price: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    imageUrl: {
+        type: Sequelize.STRING, // Changed type to STRING
+        allowNull: false
+    },
+    description: { // Corrected spelling to "description"
+        type: Sequelize.STRING,
+        allowNull: false
     }
+});
 
-
-    save() {
-        // Execute the INSERT query with parameters using the connection pool
-        return db('INSERT INTO products (title, price, describtion, imageUrl) VALUES (?, ?, ?, ?)', [
-            this.title,
-            this.price,
-            this.description,
-            this.imageUrl
-        ]);
-    }
-    static fetch() {
-  
-        return db('Select *from products')
-
-    }
-    static FindById(id) {
-        return db('SELECT * FROM products WHERE id =?',id);
-    }
-
-};
+module.exports = Product;

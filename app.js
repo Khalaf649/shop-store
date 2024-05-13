@@ -3,8 +3,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const app = express();
-const mysql=require('mysql');
-const db = require('./util/database'); // Import the promisified database module
+const sequelize=require('./util/database');
+const models=require('./index');
+
 
 // Set up EJS as view engine
 app.set('view engine', 'ejs');
@@ -32,7 +33,19 @@ app.use(errorController.get404);
 // Error Handling Middleware
 
 
-// Start server
-app.listen(3000, () => {
-    console.log("This app is listening on port 3000");
-});
+// Sync models with the database
+sequelize.sync()
+    .then(() => {
+        app.listen(3000, () => {
+            console.log(`Server listening on port 3000`);
+        });
+        console.log('Database synced');
+    })
+    .catch(err => {
+        console.error('Error syncing database:', err);
+    });
+
+// Other middleware and routes...
+
+
+
