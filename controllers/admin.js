@@ -1,4 +1,5 @@
-const Product = require('../models/products');
+const { where } = require('sequelize');
+const Product = require('../models/product');
 
 
 exports.getaddproduct = (req, res, next) => {
@@ -27,58 +28,63 @@ exports.PostEditProduct=async(req,res,next)=>{
 
 }
 exports.postaddproduct = (req, res, next) => {
-
-  Product.create({
-    title:req.body.title,
-    price:req.body.price,
-    imageUrl:req.body.imageUrl,
-    description:req.body.description
-  }).then(()=>{
-    res.redirect('/shop');
-  }).catch(err=>{
-    console.log(err);
+  // Assuming req.user represents the currently authenticated user
+  const user=req.user
+  user.createProduct({
+    title: req.body.title,
+    price: req.body.price,
+    imageUrl: req.body.imageUrl,
+    description: req.body.description
   })
-
-  
+  .then(() => {
+    // Product created successfully, redirect to shop page
+    res.redirect('/shop');
+  })
+  .catch(err => {
+    // Handle error
+    console.error('Error creating product:', err);
+    res.status(500).send('Failed to create product');
+  });
 };
 
-exports.geteditproduct = async(req, res, next) => {
-  const productId=req.params.productId;// dynamic segment
-  const EditMode=req.query.edit // key parameter
-  if(EditMode==="false")
-  {
-    return res.redirect('/shop');
-  }
-  
-  try
-  {
-    const product=await Product.findByPk(productId);
-   res.render('admin/edit-product', {
-    pageTitle: 'Edit Product',
-    path: '/admin/Edit-Product',
-    editing:true,
-    product:product
-   
-  });
-}
-catch(err)
-{
-  console.log(err);
-}
 
- 
-  
-}
-exports.getproducts = (req, res, next) => {
-  Product.findAll().then(data=>{
-    res.render('admin/product-list', {
-      prods: data,
-      pageTitle: "Admin products",
-      path: "/admin/products"
-    });
-  }).catch(err=>{
-    console.log(err);
-  })
+exports.geteditproduct = (req, res, next) => {
+  const productId = req.params.productId; // dynamic segment
+  const editMode = req.query.edit; // key parameter
+
+  if (editMode === "false") {
+      return res.redirect('/shop');
+  }
+
+  const user = req.user;
+
+  // Assuming you've set up the association properly, you can directly use include to get the product
+  user.getProducts({where:{id:productId}})
+      .then(product => {
+          if (!product) {
+              return res.redirect('/shop');
+          }
+
+          res.render('admin/edit-product', {
+              pageTitle: 'Edit Product',
+              path: '/admin/Edit-Product',
+              editing: true,
+              product: product[0]
+          });
+      })
+      .catch(err => {
+          console.error(err);
+          res.status(500).send('Internal Server Error');
+      });
+};
+exports.getproducts = async(req, res, next) => {
+  const user=req.user;
+  const products=await user.getProducts();
+  res.render('admin/product-list', {
+    prods: products,
+    pageTitle: "Admin products",
+    path: "/admin/products"
+  });
 
  
     
