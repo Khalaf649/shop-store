@@ -1,6 +1,6 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../util/database');
-const cart=sequelize.define('cart',{
+const Sequelize=require('sequelize');
+const sequelize=require('../util/database');
+const orderlist=sequelize.define('orderlist',{
     id:{
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -11,4 +11,4 @@ const cart=sequelize.define('cart',{
         type:Sequelize.INTEGER
       }
 })
-module.exports=cart;
+module.exports=orderlist;

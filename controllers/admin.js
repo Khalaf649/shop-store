@@ -1,5 +1,5 @@
-const { where } = require('sequelize');
-const Product = require('../models/product');
+const sequelize = require('sequelize');
+const Products =require('../models/product');
 
 
 exports.getaddproduct = (req, res, next) => {
@@ -79,6 +79,7 @@ exports.geteditproduct = (req, res, next) => {
 };
 exports.getproducts = async(req, res, next) => {
   const user=req.user;
+  console.log(user);
   const products=await user.getProducts();
   res.render('admin/product-list', {
     prods: products,

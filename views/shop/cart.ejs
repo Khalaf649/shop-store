@@ -7,24 +7,25 @@
             <div class="product-container">
                 <% products.forEach(p => { %>
                     <div class="product-box">
-                        <img src="<%= p.product.imageUrl %>" alt="<%= p.product.title %>" class="product-image">
+                        <img src="<%= p.imageUrl %>" alt="<%= p.title %>" class="product-image">
                         <div class="product-details">
-                            <h2><%= p.product.title %></h2>
-                            <p>Quantity: <%= p.qty %></p>
-                            <p>Total Price: <%= p.price %></p>
+                            <h2><%= p.title %></h2>
+                            <p>Quantity: <%= p.Cartitems.quantity %></p>
+                            <p>Total Price: <%= p.Cartitems.quantity*p.price %></p>
                             <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= p.product.id %>" name="productId">
+                                <input type="hidden" value="<%= p.id %>" name="productId">
                                 <button class="btn" type="submit">Delete</button>
                             </form>
                         </div>
                     </div>
                 <% }) %>
-                <div class="summary-box">
-                    <h3>Summary</h3>
-                    <p>Total Quantity: <%= TotalQuantity %></p>
-                    <p>Total Price: <%= TotalPrice %></p>
+             
                 </div>
             </div>
+              <!-- Order Now button -->
+              <form action="/order-now" method="POST" style="text-align: center; margin-top: 20px;">
+                <button class="btn" type="submit">Order Now</button>
+            </form>
         <% } else { %>
             <h1>No Products in Cart!</h1>
         <% } %>
