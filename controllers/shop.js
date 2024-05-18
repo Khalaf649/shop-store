@@ -122,11 +122,10 @@ exports.postorder=async(req,res,next)=>{
   const cart=await user.getCart();
   const products=await cart.getProducts();
  const order= await user.createOrder();
- const Items=products.map((product)=>{
-  product.orderlist={quantity:product.Cartitems.quantity};
-  return product;
- })
- await order.addProducts(Items);
+ for(let i=0;i<products.length;i++)
+    order.addProduct(products[i],{ through: { quantity: products[i].Cartitems.quantity }})
+  
+
 await cart.setProducts(null);
 res.redirect('/orders');
 
