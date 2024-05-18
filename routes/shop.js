@@ -10,4 +10,5 @@ router.post('/cart',shopController.postcart); // Use getProducts method from pro
 router.get('/cheeckout',shopController.getcheeckout);
 router.post('/cart-delete-item',shopController.postDeleteCart)
 router.post('/order-now',shopController.postorder);
+router.get('/orders',shopController.getOrder);
 module.exports = router;

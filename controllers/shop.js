@@ -3,11 +3,20 @@ const Product = require('../models/product');
 const Cart=require('../models/cart');
 const Cartitems=require('../models/cart-item');
 const Sequelize=require('sequelize');
-const { use } = require('../routes/admin');
+const { use, patch } = require('../routes/admin');
 const Order=require('../models/order');
 const orderlist=require('../models/order.item');
 
-
+exports.getOrder=async(req,res,next)=>{
+ const user=req.user;
+ const orders=await user.getOrders({include:['products']});
+ console.log(orders);
+ res.render('shop/orders',{
+  path:'/orders',
+  pageTitle:'your orders',
+  orders:orders
+ })
+}
 exports.showproducts = async(req, res, next) => {
 
   const data=await req.user.getProducts()
@@ -117,10 +126,9 @@ exports.postorder=async(req,res,next)=>{
   product.orderlist={quantity:product.Cartitems.quantity};
   return product;
  })
-
-
-await order.addProducts(Items);
-res.render('/shop');
+ await order.addProducts(Items);
+await cart.setProducts(null);
+res.redirect('/orders');
 
 }
 exports.postDeleteCart = async(req, res, next) => {
