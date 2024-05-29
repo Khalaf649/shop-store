@@ -1,29 +1,45 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../util/database');
+const { getDataBase } = require('../util/database');
+const { ObjectId } = require('mongodb');
 
-const Product = sequelize.define('product', {
-    id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true
-    },
-    title: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    price: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-    },
-    imageUrl: {
-        type: Sequelize.STRING, // Changed type to STRING
-        allowNull: false
-    },
-    description: { // Corrected spelling to "description"
-        type: Sequelize.STRING,
-        allowNull: false
+class Product {
+    constructor(title, price, imageUrl, description, _id, userId) {
+        this.title = title;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this._id = _id ? new ObjectId(_id) : null;
+        this.userId =userId;
     }
-});
+
+    async save() {
+        const database = getDataBase();
+        const collection = database.collection('products');
+        if (this._id) {
+        
+            await collection.updateOne({ _id: this._id }, { $set: this });
+        } else {
+        
+            await collection.insertOne(this);
+        }
+    }
+
+    static async fetchAll() {
+        const database = getDataBase();
+        const collection = database.collection('products');
+        return await collection.find().toArray();
+    }
+
+    static async fetchOne(productId) {
+        const database = getDataBase();
+        const collection = database.collection('products');
+        return await collection.findOne({ _id: new ObjectId(productId) });
+    }
+
+    static async deleteById(productId) {
+        const database = getDataBase();
+        const collection = database.collection('products');
+        await collection.deleteOne({ _id: new ObjectId(productId) });
+    }
+}
 
 module.exports = Product;

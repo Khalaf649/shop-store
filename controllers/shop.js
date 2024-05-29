@@ -19,7 +19,7 @@ exports.getOrder=async(req,res,next)=>{
 }
 exports.showproducts = async(req, res, next) => {
 
-  const data=await req.user.getProducts()
+ const data=await Product.fetchAll()
   res.render('shop/product-list', {
     prods: data,
     pageTitle: 'Products',
@@ -30,7 +30,7 @@ exports.showproducts = async(req, res, next) => {
 }
 
 exports.getIndex = async(req, res, next) => {
-  const products=await req.user.getProducts();
+  const products=await Product.fetchAll();
   res.render('shop/index', {
     prods: products,
     pageTitle: 'Shop',
@@ -71,7 +71,7 @@ exports.getcheeckout = (req, res, next) => {
 }
 exports.getProduct = async(req, res, next) => {
   const productID = req.params.productID;
-const product=await Product.findByPk(productID);
+const product=await Product.fetchOne(productID);
 res.render('shop/product-detail',
 {
 
