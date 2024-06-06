@@ -1,8 +1,8 @@
 const { getDataBase } = require('../util/database');
 const { ObjectId } = require('mongodb');
-
+// the id of the object that comes from controller =>Sting
 class Product {
-    constructor(title, price, imageUrl, description, _id, userId) {
+    constructor(title, price, imageUrl, description, _id, userId) {// _id=> string , userId=> objectId
         this.title = title;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -32,8 +32,10 @@ class Product {
     static async fetchOne(productId) {
         const database = getDataBase();
         const collection = database.collection('products');
-        return await collection.findOne({ _id: new ObjectId(productId) });
+      return await collection.findOne({ _id: new ObjectId(productId) });
+     
     }
+
 
     static async deleteById(productId) {
         const database = getDataBase();

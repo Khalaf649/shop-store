@@ -1,25 +1,24 @@
-const sequelize = require('sequelize');
+
 const Product = require('../models/product');
-const Cart=require('../models/cart');
-const Cartitems=require('../models/cart-item');
-const Sequelize=require('sequelize');
+
+
 const { use, patch } = require('../routes/admin');
-const Order=require('../models/order');
-const orderlist=require('../models/order.item');
 
-exports.getOrder=async(req,res,next)=>{
- const user=req.user;
- const orders=await user.getOrders({include:['products']});
- console.log(orders);
- res.render('shop/orders',{
-  path:'/orders',
-  pageTitle:'your orders',
-  orders:orders
- })
+
+
+exports.getOrder = async (req, res, next) => {
+  const user = req.user;
+  const orders = await user.getOrders({ include: ['products'] });
+  console.log(orders);
+  res.render('shop/orders', {
+    path: '/orders',
+    pageTitle: 'your orders',
+    orders: orders
+  })
 }
-exports.showproducts = async(req, res, next) => {
+exports.showproducts = async (req, res, next) => {
 
- const data=await Product.fetchAll()
+  const data = await Product.fetchAll()
   res.render('shop/product-list', {
     prods: data,
     pageTitle: 'Products',
@@ -29,8 +28,8 @@ exports.showproducts = async(req, res, next) => {
 
 }
 
-exports.getIndex = async(req, res, next) => {
-  const products=await Product.fetchAll();
+exports.getIndex = async (req, res, next) => {
+  const products = await Product.fetchAll();
   res.render('shop/index', {
     prods: products,
     pageTitle: 'Shop',
@@ -38,26 +37,14 @@ exports.getIndex = async(req, res, next) => {
   })
 
 }
-exports.postcart = async(req, res, next) => {
+exports.postcart = async (req, res, next) => {
+  const User = req.user;
   const productId = req.body.productId;
-  const user=req.user;
-  const cart=await user.getCart();
-  const products=await cart.getProducts({where:{id:productId}});
-  if(products.length > 0)
-    {
-     let product=products[0];
-    let quantity= await product.Cartitems.quantity;
-    quantity+=1;
-    await cart.addProduct(product, { through: { quantity: quantity } });
-    res.redirect('/shop');
+  const product = await Product.fetchOne(productId);
+  User.addToCart(product);
+  res.redirect('/cart');
 
-    }
-    else{
-     const product=await Product.findByPk(productId);
-     await cart.addProduct(product, { through: { quantity: 1 } });
-      res.redirect('/cart');
-    }
-  
+
 
 
 }
@@ -69,33 +56,33 @@ exports.getcheeckout = (req, res, next) => {
       pageTitle: "cheeckout"
     });
 }
-exports.getProduct = async(req, res, next) => {
+exports.getProduct = async (req, res, next) => {
   const productID = req.params.productID;
-const product=await Product.fetchOne(productID);
-res.render('shop/product-detail',
-{
+  const product = await Product.fetchOne(productID);
+  res.render('shop/product-detail',
+    {
 
-  pageTitle: "Deatils",
-  product: product,
-  path: "/products"
-});
-  
+      pageTitle: "Deatils",
+      product: product,
+      path: "/products"
+    });
+
 
 
 
 }
 
-exports.getcart = async(req, res, next) => {
-  const user=req.user;
-  const cart=await user.getCart();
-  const products=await cart.getProducts();
-  res.render('shop/cart',{
-    path:'/cart',
-    pageTitle:'Your cart',
-    products:products
-  })
-  
-  
+exports.getcart = async (req, res, next) => {
+  const user = req.user;
+  const cart = await user.getCart();
+  const products =
+    res.render('shop/cart', {
+      path: '/cart',
+      pageTitle: 'Your cart',
+      products: cart
+    })
+
+
   // Cart.fetch((cart) => {
   //   Product.fetch((products) => {
   //     const ans = [];
@@ -117,30 +104,25 @@ exports.getcart = async(req, res, next) => {
   //   })
   // })
 }
-exports.postorder=async(req,res,next)=>{
-  const user=req.user;
-  const cart=await user.getCart();
-  const products=await cart.getProducts();
- const order= await user.createOrder();
- for(let i=0;i<products.length;i++)
-    order.addProduct(products[i],{ through: { quantity: products[i].Cartitems.quantity }})
-  
+exports.postorder = async (req, res, next) => {
+  const user = req.user;
+  const cart = await user.getCart();
+  const products = await cart.getProducts();
+  const order = await user.createOrder();
+  for (let i = 0; i < products.length; i++)
+    order.addProduct(products[i], { through: { quantity: products[i].Cartitems.quantity } })
 
-await cart.setProducts(null);
-res.redirect('/orders');
+
+  await cart.setProducts(null);
+  res.redirect('/orders');
 
 }
-exports.postDeleteCart = async(req, res, next) => {
-  const productId=req.body.productId;
- const user=req.user;
- const cart=await user.getCart();
- const products=await cart.getProducts({where:{id:productId}});
- if(products.length > 0)
-  {
-    let product=products[0];
-    await product.Cartitems.destroy();
-    res.redirect('/shop');
+exports.postDeleteCart = async (req, res, next) => {
+  const productId = req.body.productId;
+  console.log(productId);
+  const user = req.user;
+    user.deleteFromCart(productId);
+    res.redirect('/cart');
 
-  }
 }
 

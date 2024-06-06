@@ -10,10 +10,10 @@
                         <img src="<%= p.imageUrl %>" alt="<%= p.title %>" class="product-image">
                         <div class="product-details">
                             <h2><%= p.title %></h2>
-                            <p>Quantity: <%= p.Cartitems.quantity %></p>
-                            <p>Total Price: <%= p.Cartitems.quantity*p.price %></p>
+                            <p>Quantity: <%= p.quantity %></p>
+                            <p>Total Price: <%= p.quantity*p.price %></p>
                             <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= p.id %>" name="productId">
+                                <input type="hidden" value="<%= p._id %>" name="productId">
                                 <button class="btn" type="submit">Delete</button>
                             </form>
                         </div>
