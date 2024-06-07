@@ -21,7 +21,7 @@ app.use(async (req, res, next) => {
     try {
         const user = await User.fetchOne('6661d574ff095b27d7083c45');
         if (user) {
-            req.user = new User(user.userName, user.userEmail, '6661d574ff095b27d7083c45',user.cart);
+            req.user = new User(user.userName, user.userEmail, '6661d574ff095b27d7083c45',user.cart,user.orders);
 
         }
         next();

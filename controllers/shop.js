@@ -8,7 +8,7 @@ const { use, patch } = require('../routes/admin');
 
 exports.getOrder = async (req, res, next) => {
   const user = req.user;
-  const orders = await user.getOrders({ include: ['products'] });
+  const orders = await user.getOrders();
   console.log(orders);
   res.render('shop/orders', {
     path: '/orders',
@@ -105,21 +105,15 @@ exports.getcart = async (req, res, next) => {
   // })
 }
 exports.postorder = async (req, res, next) => {
+  console.log('a7a');
   const user = req.user;
-  const cart = await user.getCart();
-  const products = await cart.getProducts();
-  const order = await user.createOrder();
-  for (let i = 0; i < products.length; i++)
-    order.addProduct(products[i], { through: { quantity: products[i].Cartitems.quantity } })
-
-
-  await cart.setProducts(null);
-  res.redirect('/orders');
+ await user.addOrder();
+ res.redirect('/order');
 
 }
 exports.postDeleteCart = async (req, res, next) => {
   const productId = req.body.productId;
-  console.log(productId);
+  
   const user = req.user;
     user.deleteFromCart(productId);
     res.redirect('/cart');

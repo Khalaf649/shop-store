@@ -10,11 +10,12 @@ const Product = require('./product');
  * }
  */
 class User {
-    constructor(userName, userEmail, _id, cart) {
+    constructor(userName, userEmail, _id, cart,orders) {
         this.userName = userName;
         this.userEmail = userEmail;
         this._id = _id ? new ObjectId(_id) : null;
         this.cart = cart?cart:{items:[]};
+        this.orders=orders? orders:{orders:[]};
 
     }
     async addToCart(product)// if its the first time to be added or added before
@@ -112,7 +113,35 @@ class User {
             throw error;
         }
     }
-   async getCart()
+    async addOrder()
+    {
+           const db=getDataBase();
+           const collection=db.collection('orders');
+           const products=await this.getCart();
+          await collection.insertOne({
+            items:products,
+            User:
+            {
+                id:this._id,
+                userName:this.userName
+            }
+
+           })
+           this.cart={items:[]};
+           const userCollection=db.collection('users');
+          await userCollection.updateOne({_id:this._id},{$set:{
+            cart:this.cart
+           }})
+
+    }
+    async getOrders()
+    {
+        const db=getDataBase();
+        const collection=db.collection('orders');
+        return await collection.find({'User.id':this._id}).toArray();
+    }
+
+    async getCart()
     {
       
         const db=getDataBase();

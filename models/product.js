@@ -40,6 +40,7 @@ class Product {
     static async deleteById(productId) {
         const database = getDataBase();
         const collection = database.collection('products');
+        
         await collection.deleteOne({ _id: new ObjectId(productId) });
     }
 }
