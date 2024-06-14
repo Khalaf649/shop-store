@@ -1,177 +1,90 @@
-const { getDataBase } = require('../util/database');
-const { ObjectId } = require('mongodb');
-const Product = require('./product');
-/**
- * cart={
- * items: [ {prodiD: ,Quantity:  Price:}],
- * TotalPrice:   ,
- * TOtalQuantity:
- * 
- * }
- */
-class User {
-    constructor(userName, userEmail, _id, cart,orders) {
-        this.userName = userName;
-        this.userEmail = userEmail;
-        this._id = _id ? new ObjectId(_id) : null;
-        this.cart = cart?cart:{items:[]};
-        this.orders=orders? orders:{orders:[]};
-
-    }
-    async addToCart(product)// if its the first time to be added or added before
-    {
-
-        const updatedCart = { ...this.cart };
-        const index = updatedCart.items.findIndex(cb => {
-            return cb.productId.toString() === product._id.toString()
-        })
-        if (index != -1) {
-          updatedCart.items[index].quantity+=1;
-        }
-        else
-        {
-            updatedCart.items.push({
-                productId:product._id,
-                quantity:1
-            })
-        }
-       
-        const database = getDataBase();
-        const collection = database.collection('users');
-        await collection.updateOne({ _id: this._id }, {
-            $set: {
-                cart: updatedCart
-            }
-        });
-
-
-    }
-
-    async save() {
-        try {
-            const database = getDataBase();
-            const collection = database.collection('users');
-            if (this._id) {
-                await collection.updateOne({ _id: this._id }, { $set: this });
-            } else {
-                await collection.insertOne(this);
-            }
-        } catch (error) {
-            console.error('Error saving user:', error);
-            throw error;
-        }
-    }
-
-    // addToCart(product) {
-    //     const index = this.cart.items.findIndex(item => item.ProductId._id === product._id());
-    //     if (index === -1) {
-    //         this.cart.items.push({
-    //             ProductId: product._id.toString(),
-    //             Quantity: 1,
-    //             Price: product.price
-    //         });
-    //     } else {
-    //         this.cart.items[index].Quantity += 1;
-    //         this.cart.items[index].Price += product.price;
-    //     }
-    //     this.cart.totalQuantity += 1;
-    //     this.cart.totalPrice += product.price;
-    //     console.log(this.cart);
-    // }
-
-    static async fetchOne(UserId) {
-        try {
-            const database = getDataBase();
-            const collection = database.collection('users');
-            return await collection.findOne({ _id: new ObjectId(UserId) });
-
-
-        } catch (error) {
-            console.error('Error fetching user:', error);
-            throw error;
-        }
-    }
-
-    static async fetchAll() {
-        try {
-            const database = getDataBase();
-            const collection = database.collection('users');
-            return await collection.find().toArray();
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            throw error;
-        }
-    }
-
-    static async deleteOne(UserId) {
-        try {
-            const database = getDataBase();
-            const collection = database.collection('users');
-            await collection.deleteOne({ _id: new ObjectId(UserId) });
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            throw error;
-        }
-    }
-    async addOrder()
-    {
-           const db=getDataBase();
-           const collection=db.collection('orders');
-           const products=await this.getCart();
-          await collection.insertOne({
-            items:products,
-            User:
-            {
-                id:this._id,
-                userName:this.userName
-            }
-
-           })
-           this.cart={items:[]};
-           const userCollection=db.collection('users');
-          await userCollection.updateOne({_id:this._id},{$set:{
-            cart:this.cart
-           }})
-
-    }
-    async getOrders()
-    {
-        const db=getDataBase();
-        const collection=db.collection('orders');
-        return await collection.find({'User.id':this._id}).toArray();
-    }
-
-    async getCart()
-    {
-      
-        const db=getDataBase();
-        const collection=db.collection('products');
-        const  cartProductid=this.cart.items.map(i=>{
-            return i.productId;
-        })
-         const products=await collection.find({_id:{$in:cartProductid}}).toArray();
-         const ans=products.map(i=>{
-            return {...i,quantity:this.cart.items.find(x=>{
-                return x.productId.toString()===i._id.toString();
-            }).quantity}
-         })
-        
-return ans;
-    }
-   async deleteFromCart(productID) {
-        let items = this.cart.items;
-        const index = items.findIndex(c => {
-            return c.productId.toString() === productID.toString();
-        });
-    
-       items.splice(index,1);
-       const db=getDataBase();
-       const collection=db.collection('users');
-      await collection.updateOne({_id:this._id},{$set:{
-        cart:this.cart
-       }})
-    }
-    
+const mongoose = require('mongoose');
+const { NUMBER } = require('sequelize');
+const Schema = mongoose.Schema
+//user
+/*
+name=>String
+email=>String
+cart :{
+TotalPrice=>Number,
+items:[{productId: , Quantity:}]
 }
 
-module.exports = User;
+
+
+
+
+
+
+
+*/
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    cart:
+    {
+        items: [{
+            ProductId: {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: 'Product'
+            }, Quantity: {
+                type: Number,
+                required: true
+            }
+        }],
+        TotalPrice: {
+            type: Number,
+            required: true
+        }
+    }
+
+
+
+})
+userSchema.methods.addToCart = async function (product) {// instance method
+    const index = this.cart.items.findIndex(cb => {
+        return cb.ProductId.toString() === product._id.toString();
+    })
+    if (index !== -1)
+        this.cart.items[index].Quantity += 1;
+    else
+        this.cart.items.push({
+            ProductId: product._id,
+            Quantity: 1
+
+        })
+    this.cart.TotalPrice += product.price;
+    await this.save();
+
+}
+userSchema.methods.getCart = async function () {
+    await this.populate('cart.items.ProductId');
+    return this.cart.items;
+};
+userSchema.methods.addOrder = async function () {
+    const order = await this.getCart();
+    for (let i = 0; i < order.length; i++)
+        this.orders.items.push({ title: order[i].ProductId.title, Quantity: order[i].Quantity });
+    this.cart = {
+        items: [],
+        TotalPrice: 0
+    }
+    await this.save();
+
+}
+
+userSchema.methods.deleteFromCart = async function (ProductId) {
+    const updatedItems = this.cart.items.filter(cb => {
+        return cb.ProductId.toString() !== ProductId.toString()
+    })
+    this.cart.items = updatedItems;
+    this.save();
+}
+module.exports = mongoose.model('User', userSchema);

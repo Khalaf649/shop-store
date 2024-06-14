@@ -15,15 +15,28 @@ exports.PostEditProduct=async(req,res,next)=>{
   const productprice=req.body.price;
   const productDescribtion=req.body.description;
   const productimage=req.body.imageUrl;
-  const newProduct=new Product(producttitle,(Number)(productprice),productimage,productDescribtion,productID,req.user._id);
-  await newProduct.save();
-  res.redirect('/shop');
+ await Product.findByIdAndUpdate(productID,{
+  title:producttitle,
+  price:productprice,
+  description:productDescribtion,
+  imageUrl:productimage,
+  userId:req.user._id
+
+ })
+ res.redirect('/shop');
 
 }
 exports.postaddproduct = async(req, res, next) => {
   // Assuming req.user represents the currently authenticated user
-  const product=new Product(req.body.title,(Number)(req.body.price),req.body.imageUrl,req.body.description,null,req.user._id);
-  await product.save()
+    const product=new Product({
+      title:req.body.title,
+      price:req.body.price,
+      description:req.body.description,
+      imageUrl:req.body.imageUrl,
+      userId:req.user._id
+    })
+  await product.save();
+
   res.redirect('/shop');
 
 };
@@ -36,7 +49,7 @@ exports.geteditproduct = async(req, res, next) => {
       return res.redirect('/shop');
   }
 
-  const product=await Product.fetchOne(productId);
+  const product=await Product.findById(productId);
   res.render('admin/edit-product', {
     pageTitle: 'Edit Product',
     path: '/admin/Edit-Product',
@@ -46,7 +59,9 @@ exports.geteditproduct = async(req, res, next) => {
   
 };
 exports.getproducts = async(req, res, next) => {
-  const products=await  Product.fetchAll();
+  const products=await  Product.find()
+  // .select('title price -_id ').populate('userId','name email -_id');
+  console.log(products);
   res.render('admin/product-list', {
     prods: products,
     pageTitle: "Admin products",
@@ -60,7 +75,8 @@ exports.getproducts = async(req, res, next) => {
 exports.postDeleteProduct=async(req,res,next)=>{
   
   const id=req.body.productId;
-  await Product.deleteById(id);
+  await Product.findByIdAndDelete(id);
+  
   res.redirect('/shop');
  
 

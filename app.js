@@ -1,35 +1,35 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
+const mongoose = require('mongoose');
+const User = require('./models/user'); // Adjust the path to your User model
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const errorController = require('./controllers/error');
-const connect = require('./util/database').connect;
-const User = require('./models/user');
+
+const app = express();
 
 // Set up EJS as view engine
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-
+// Middleware to fetch user by ID
 app.use(async (req, res, next) => {
     try {
-        const user = await User.fetchOne('6661d574ff095b27d7083c45');
-        if (user) {
-            req.user = new User(user.userName, user.userEmail, '6661d574ff095b27d7083c45',user.cart,user.orders);
-
-        }
-        next();
+        const user = await User.findById('666b5c71e4d3ef298ace702e'); // Replace with your actual user ID retrieval logic
+        req.user = user; // Set req.user to the fetched user
+        next(); // Proceed to the next middleware
     } catch (err) {
         console.error('Error fetching user:', err);
-        next(err);
+        next(err); // Pass the error to the error handling middleware
     }
 });
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Static files middleware
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/admin', adminRoutes);
@@ -39,20 +39,21 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 // Error Handling Middleware
-// app.use((err, req, res, next) => {
-//     console.error(err.stack);
-//     res.status(500).send('Something went wrong!');
-// });
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something went wrong!');
+});
 
-// Define associations between models
-
-(async () => {
-    try {
-        await connect();
-        app.listen(3000, () => {
-            console.log('Server is running on port 3000');
-        });
-    } catch (err) {
-        throw new Error('Failed to connect to the database: ' + err.message);
-    }
-})();
+// Connect to MongoDB and start the server
+mongoose.connect('mongodb+srv://khalaf:khalaf2002@onlinestore.ggfotk8.mongodb.net/shop?retryWrites=true&w=majority&appName=OnlineStore'
+  
+)
+.then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(3000, () => {
+        console.log('Server is running on port 3000');
+    });
+})
+.catch(err => {
+    console.error('Failed to connect to MongoDB', err);
+});
