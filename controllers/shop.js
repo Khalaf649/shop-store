@@ -1,14 +1,17 @@
 
 const Product = require('../models/product');
 const Order=require('../models/order');
+const Cart=require('../models/cart');
 
 
 const { use, patch } = require('../routes/admin');
+const { Json } = require('sequelize/lib/utils');
+const product = require('../models/product');
 
 
 
 exports.getOrder = async (req, res, next) => {
-  const orders = await Order.find();
+  const orders = await Order.find({"User.id":req.user._id});
   console.log(orders);
   res.render('shop/orders', {
     path: '/orders',
@@ -42,12 +45,11 @@ exports.postcart = async (req, res, next) => {
   const User = req.user;
   const productId = req.body.productId;
   const product = await Product.findById(productId);
-  await User.addToCart(product);
+  const cart=await Cart.findOne({'User.id':User._id});
+ await cart.addProduct(product);
+  
+  
   res.redirect('/cart');
-
-
-
-
 }
 
 exports.getcheeckout = (req, res, next) => {
@@ -75,86 +77,52 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getcart = async (req, res, next) => {
   const user = req.user;
-  const cart = await user.getCart();
-  console.log(cart);
+  const cart = await Cart.findOne({'User.id':user._id}).populate('items.ProductId');
   res.render('shop/cart', {
     path: '/cart',
     pageTitle: 'Your cart',
-    products: cart,
-    totalPrice:user.cart.TotalPrice
+    products: cart.items,
+    totalPrice:cart.TotalPrice
   })
-
-
-  // Cart.fetch((cart) => {
-  //   Product.fetch((products) => {
-  //     const ans = [];
-  //     for (var i = 0; i < cart.prods.length; i++) {
-  //       for (var j = 0; j < products.length; j++) {
-  //         if (cart.prods[i].id === products[j].id) {
-  //           ans.push(
-  //             {
-  //               product: products[j],
-  //               qty: cart.prods[i].qty,
-  //               price: cart.prods[i].TotalPrice
-
-  //             }
-  //           )
-  //         }
-  //       }
-  //     }
-  //     
-  //   })
-  // })
 }
- // Import the Order model
 
 exports.postorder = async (req, res, next) => {
-    try {
-        const user = req.user; 
-        const cart = await user.getCart(); 
-        
-      console.log(cart);
-        const order = new Order({
-            user: {
-                userId: req.user._id,
-                username: req.user.name 
-            },
-            items:cart.map(item=>{
-              return {
-                Product:item.ProductId._doc,
-                ProductQuantity:item.Quantity
-              }
-            })
-
-          
-        });
-
-        // Save the order to the database
-        await order.save();
-
-        // Clear the user's cart (assuming you have a method for this in your user model)
-         user.cart={
-          items:[],
-          TotalPrice:0
+    const user=req.user;
+    const cart=await Cart.findOne({"User.id":user._id}).populate("items.ProductId");
+    const order=new Order({
+      items:cart.items.map(i=>{
+        return {
+          product:i.ProductId.toObject(),
+          Quantity:i.Quantity
         }
-       await user.save();
+      }),
+      TotalPrice:cart.TotalPrice,
+      TotalQuantity:cart.TotalQuantity,
+      User:{
+        name:user.name,
+        id:user._id
+      }
 
-        // Redirect to a shop page or another appropriate route
-        res.redirect('/shop');
-    } catch (error) {
-        // Handle errors appropriately
-        console.error('Error creating order:', error);
-        // Redirect or respond with an error message
-        res.status(500).send('Failed to place order');
     }
+       )
+       cart.items=[];
+       cart.TotalPrice=0;
+       cart.TotalQuantity=0;
+    
+       await cart.save();
+       await order.save();
+       res.redirect('/orders'); 
 };
 
 exports.postDeleteCart = async (req, res, next) => {
   const productId = req.body.productId;
 
   const user = req.user;
-  await user.deleteFromCart(productId);
-  res.redirect('/cart');
+  const cart=await Cart.findOne({"User.id":user._id});
+  const product=await Product.findById(productId);
+  console.log(cart);
+   cart.deleteProduct(product);
+   res.redirect('/cart');
 
 }
 

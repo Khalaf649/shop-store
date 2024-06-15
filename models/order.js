@@ -1,25 +1,38 @@
 const mongoose = require('mongoose');
+const Product = require('./product');
 const Schema = mongoose.Schema;
-
-const orderSchema = new Schema({
+const OrderSchema = new Schema({
     items: [{
-        Product: {
+        product: {
             type: Object,
             required: true
         },
-        ProductQuantity: {
-            type: Number,
+        Quantity: {
+            type: Schema.Types.Number,
             required: true
         }
     }],
-    user: {
-        userId: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: 'User' // Reference to the User model
+    TotalPrice: {
+        type: Schema.Types.Number,
+        required: true,
+        default: 0
+    },
+    TotalQuantity: {
+        type: Schema.Types.Number,
+        required: true,
+        default: 0
+    },
+    User:{ // one to one relation
+        name:{
+            type:Schema.Types.String,
+            required:true
         },
-        username: String // Optional: You can store the username here
+        id:{
+            type:Schema.Types.ObjectId,
+            required:true,
+            ref:'User'
+        }
     }
-});
 
-module.exports = mongoose.model('Order', orderSchema);
+})
+module.exports=mongoose.model('Order',OrderSchema);

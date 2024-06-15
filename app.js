@@ -6,7 +6,7 @@ const User = require('./models/user'); // Adjust the path to your User model
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const errorController = require('./controllers/error');
-
+const Cart=require('./models/cart')
 const app = express();
 
 // Set up EJS as view engine
