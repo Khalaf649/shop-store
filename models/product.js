@@ -18,7 +18,7 @@ const productSchema = new Schema({
         type: String,
         required: true
     },
-    userId:{
+    userId:{// one to Many relation
         type:Schema.Types.ObjectId,
         required:true,
         ref:'User'

@@ -46,24 +46,22 @@ cartScehma.methods.addProduct = async function (product) {
             ProductId: product._id,
             Quantity: 1
         })
-        this.TotalPrice+=product.price;
-        this.TotalQuantity+=1;
-     await   this.save();
+    this.TotalPrice += product.price;
+    this.TotalQuantity += 1;
+    await this.save();
 
 }
-cartScehma.methods.deleteProduct=async function(product)
-{
-    const index=this.items.findIndex(cb=>{
-        return cb.ProductId.toString()===product._id.toString();
+cartScehma.methods.deleteProduct = async function (product) {
+    const index = this.items.findIndex(cb => {
+        return cb.ProductId.toString() === product._id.toString();
     })
-    this.TotalPrice-=this.items[index].Quantity*product.price;
-    this.TotalQuantity-=this.items[index].Quantity;
-    this.items.splice(index,1);
-   await this.save();
- 
+    this.TotalPrice -= this.items[index].Quantity * product.price;
+    this.TotalQuantity -= this.items[index].Quantity;
+    this.items.splice(index, 1);
+    await this.save();
+
 }
-cartScehma.methods.getProducts=async function()
-{
+cartScehma.methods.getProducts = async function () {
     await this.populate(items.ProductId);
     return this.items;
 }

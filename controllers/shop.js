@@ -7,6 +7,7 @@ const Cart=require('../models/cart');
 const { use, patch } = require('../routes/admin');
 const { Json } = require('sequelize/lib/utils');
 const product = require('../models/product');
+const router = require('../routes/admin');
 
 
 
@@ -16,7 +17,9 @@ exports.getOrder = async (req, res, next) => {
   res.render('shop/orders', {
     path: '/orders',
     pageTitle: 'your orders',
-    orders: orders
+    orders: orders,
+    isAuthenticated:req.session.isAuthenticated===true
+    
   })
 }
 exports.showproducts = async (req, res, next) => {
@@ -25,7 +28,9 @@ exports.showproducts = async (req, res, next) => {
   res.render('shop/product-list', {
     prods: data,
     pageTitle: 'Products',
-    path: '/product'
+    path: '/product',
+    isAuthenticated:req.session.isAuthenticated===true
+
   })
 
 
@@ -33,11 +38,15 @@ exports.showproducts = async (req, res, next) => {
 }
 
 exports.getIndex = async (req, res, next) => {
+  console.log(1);
   const products = await Product.find();
   res.render('shop/index', {
     prods: products,
     pageTitle: 'Shop',
-    path: '/shop'
+    path: '/shop',
+    isAuthenticated:req.session.isAuthenticated===true
+    
+ 
   })
 
 }
@@ -56,7 +65,9 @@ exports.getcheeckout = (req, res, next) => {
   res.render('shop/cheeckout',
     {
       path: '/cheeckout',
-      pageTitle: "cheeckout"
+      pageTitle: "cheeckout",
+      isAuthenticated:req.session.isAuthenticated===true
+      
     });
 }
 exports.getProduct = async (req, res, next) => {
@@ -67,7 +78,9 @@ exports.getProduct = async (req, res, next) => {
 
       pageTitle: "Deatils",
       product: product,
-      path: "/products"
+      path: "/products",
+      isAuthenticated:req.session.isAuthenticated===true
+    
     });
 
 
@@ -75,16 +88,44 @@ exports.getProduct = async (req, res, next) => {
 
 }
 
-exports.getcart = async (req, res, next) => {
-  const user = req.user;
-  const cart = await Cart.findOne({'User.id':user._id}).populate('items.ProductId');
-  res.render('shop/cart', {
-    path: '/cart',
-    pageTitle: 'Your cart',
-    products: cart.items,
-    totalPrice:cart.TotalPrice
-  })
-}
+exports.getcart= async (req, res, next) => {
+  try {
+    // Ensure user is authenticated
+    if (!req.session.user) {
+      return res.redirect('/login'); // Redirect to login if user is not authenticated
+    }
+
+    const user = req.user;
+
+    // Fetch the user's cart and populate the products in the items array
+    const cart = await Cart.findOne({ 'User.id': req.session.user._id }).populate('items.ProductId');
+    
+    // Check if cart exists
+    if (!cart) {
+      return res.render('shop/cart', {
+        path: '/cart',
+        pageTitle: 'Your Cart',
+        products: [],
+        totalPrice: 0,
+        isAuthenticated: req.session.isAuthenticated === true
+      });
+    }
+
+    console.log(cart);
+
+    res.render('shop/cart', {
+      path: '/cart',
+      pageTitle: 'Your Cart',
+      products: cart.items,
+      totalPrice: cart.TotalPrice,
+      isAuthenticated: req.session.isAuthenticated === true
+    });
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    next(error); // Pass the error to the error handling middleware
+  }
+};
+
 
 exports.postorder = async (req, res, next) => {
     const user=req.user;

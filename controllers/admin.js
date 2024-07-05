@@ -4,7 +4,9 @@ exports.getaddproduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/addproduct',
-    editing:false
+    editing:false,
+    isAuthenticated:req.session.isAuthenticated===true
+  
    
   });
 }
@@ -20,20 +22,20 @@ exports.PostEditProduct=async(req,res,next)=>{
   price:productprice,
   description:productDescribtion,
   imageUrl:productimage,
-  userId:req.user._id
+  userId:req.session.user._id
 
  })
  res.redirect('/shop');
 
 }
 exports.postaddproduct = async(req, res, next) => {
-  // Assuming req.user represents the currently authenticated user
+  // Assuming req.session.user represents the currently authenticated user
     const product=new Product({
       title:req.body.title,
       price:req.body.price,
       description:req.body.description,
       imageUrl:req.body.imageUrl,
-      userId:req.user._id
+      userId:req.session.user._id
     })
   await product.save();
 
@@ -54,7 +56,9 @@ exports.geteditproduct = async(req, res, next) => {
     pageTitle: 'Edit Product',
     path: '/admin/Edit-Product',
     editing: true,
-    product: product
+    product: product,
+    isAuthenticated:req.session.isAuthenticated===true
+ 
 });
   
 };
@@ -65,7 +69,9 @@ exports.getproducts = async(req, res, next) => {
   res.render('admin/product-list', {
     prods: products,
     pageTitle: "Admin products",
-    path: "/admin/products"
+    path: "/admin/products",
+    isAuthenticated:req.session.isAuthenticated===true
+  
   });
 
  
