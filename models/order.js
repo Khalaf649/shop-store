@@ -23,7 +23,7 @@ const OrderSchema = new Schema({
         default: 0
     },
     User:{ // one to one relation
-        name:{
+        email:{
             type:Schema.Types.String,
             required:true
         },

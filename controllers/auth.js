@@ -1,40 +1,115 @@
 const User = require('../models/user');
+const Cart = require('../models/cart');
+const bcryptjs = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
-// Render login page
+// Create a transporter object using SMTP transport
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'abdlrhmankhalaf566@gmail.com',
+        pass: 'rbrx leti prdz qcuy'
+    }
+});
+
 exports.getLogIn = (req, res, next) => {
-    console.log(req.session.isAuthenticated);
+    let message = req.flash('Error');
+    if (message.length > 0)
+        message = message[0];
+    else
+        message = null;
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
-        isAuthenticated: req.session.isAuthenticated  // Assuming isAuthenticated is set correctly
+        error: message
     });
+}
+
+exports.getSignUp = async (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0)
+        message = message[0];
+    else
+        message = null;
+    res.render('auth/signup', {
+        pageTitle: 'SignUp',
+        path: '/SignUp',
+        error: message
+    });
+}
+
+exports.postSignUp = async (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+
+    const userDoc = await User.findOne({ email: email });
+    if (userDoc) {
+        req.flash('error', 'Email is already used');
+        return res.redirect('/signup');
+    }
+
+    const hashedPassword = await bcryptjs.hash(password, 12);
+    const user = new User({
+        email: email,
+        password: hashedPassword
+    });
+    await user.save();
+
+    const cart = new Cart({
+        items: [],
+        TotalPrice: 0,
+        TotalQuantity: 0,
+        User: {
+            email: email,
+            id: user._id
+        }
+    });
+    await cart.save();
+
+    // Send welcome email
+    const mailOptions = {
+        from: 'abdlrhmankhalaf566@gmail.com',
+        to: email,
+        subject: 'Welcome to Our Shop!',
+        text: 'Thank you for signing up!'
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log('Error sending email:', error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+
+    res.redirect('/shop');
 }
 
 // Handle login POST request
 exports.postLogIn = async (req, res, next) => {
-    try {
-        // Replace with your actual logic to find user by username or email
-        const user = await User.findById('666b5c71e4d3ef298ace702e'); // Replace with dynamic retrieval logic
+    const email = req.body.email;
+    const password = req.body.password;
 
-        if (!user) {
-            // Handle case where user is not found
-            return res.redirect('/login'); // Redirect to login page or handle accordingly
-        }
+    const userDoc = await User.findOne({ email: email });
+    if (!userDoc) {
+        req.flash('Error', 'Invalid email or password');
+        return res.redirect('/login');
+    }
 
-        req.session.user = user; // Set user in session
-        req.session.isAuthenticated = true; // Example: Set isAuthenticated flag
+    const match = await bcryptjs.compare(password, userDoc.password);
+    if (match) {
+        req.session.isAuthenticated = 1;
+        req.session.user = userDoc;
         await req.session.save();
-        res.redirect('/shop'); // Redirect to shop page after successful login
-    } catch (err) {
-        console.error('Error fetching user:', err);
-        // Handle error (e.g., redirect to error page or show error message)
-        res.redirect('/login'); // Redirect to login page on error
+        res.redirect('/shop');
+    } else {
+        res.redirect('/login');
     }
 }
 
-// Handle logout GET request
+// Handle logout POST request
 exports.postLogOut = (req, res, next) => {
-    console.log(1);
     req.session.destroy((err) => {
         if (err) {
             console.error('Error destroying session:', err);

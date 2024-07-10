@@ -1,16 +1,25 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <main class="centered">
-            <h1><%= product.title %></h1>
-            <hr>
-            <div class="image">
-                <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
-            </div>
-            <h2><%= product.price %></h2>
-            <p><%= product.description %></p>
-            <%- include('../includes/add-to-cart.ejs') %>
-        </main>
-        <%- include('../includes/end.ejs') %>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="centered">
+        <h1><%= product.title %></h1>
+        <hr>
+        <div class="image">
+            <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+        </div>
+        <h2><%= product.price %></h2>
+        <p><%= product.description %></p>
+        <% if (isAuthenticated) { %>
+        <!-- Add CSRF token to form -->
+        <form action="/cart" method="POST">
+            <input type="hidden" name="productId" value="<%= product._id %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn">Add to Cart</button>
+        </form>
+        <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>
+</body>
+</html>

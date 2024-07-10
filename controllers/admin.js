@@ -5,9 +5,6 @@ exports.getaddproduct = (req, res, next) => {
     pageTitle: 'Add Product',
     path: '/admin/addproduct',
     editing:false,
-    isAuthenticated:req.session.isAuthenticated===true
-  
-   
   });
 }
 exports.PostEditProduct=async(req,res,next)=>{
@@ -57,7 +54,6 @@ exports.geteditproduct = async(req, res, next) => {
     path: '/admin/Edit-Product',
     editing: true,
     product: product,
-    isAuthenticated:req.session.isAuthenticated===true
  
 });
   
@@ -70,8 +66,6 @@ exports.getproducts = async(req, res, next) => {
     prods: products,
     pageTitle: "Admin products",
     path: "/admin/products",
-    isAuthenticated:req.session.isAuthenticated===true
-  
   });
 
  

@@ -18,8 +18,6 @@ exports.getOrder = async (req, res, next) => {
     path: '/orders',
     pageTitle: 'your orders',
     orders: orders,
-    isAuthenticated:req.session.isAuthenticated===true
-    
   })
 }
 exports.showproducts = async (req, res, next) => {
@@ -29,7 +27,7 @@ exports.showproducts = async (req, res, next) => {
     prods: data,
     pageTitle: 'Products',
     path: '/product',
-    isAuthenticated:req.session.isAuthenticated===true
+
 
   })
 
@@ -38,21 +36,18 @@ exports.showproducts = async (req, res, next) => {
 }
 
 exports.getIndex = async (req, res, next) => {
-  console.log(1);
   const products = await Product.find();
   res.render('shop/index', {
     prods: products,
     pageTitle: 'Shop',
     path: '/shop',
-    isAuthenticated:req.session.isAuthenticated===true
-    
- 
   })
-
 }
+
 exports.postcart = async (req, res, next) => {
   const User = req.user;
   const productId = req.body.productId;
+  console.log(User);
   const product = await Product.findById(productId);
   const cart=await Cart.findOne({'User.id':User._id});
  await cart.addProduct(product);
@@ -66,7 +61,6 @@ exports.getcheeckout = (req, res, next) => {
     {
       path: '/cheeckout',
       pageTitle: "cheeckout",
-      isAuthenticated:req.session.isAuthenticated===true
       
     });
 }
@@ -79,7 +73,7 @@ exports.getProduct = async (req, res, next) => {
       pageTitle: "Deatils",
       product: product,
       path: "/products",
-      isAuthenticated:req.session.isAuthenticated===true
+     
     
     });
 
@@ -107,18 +101,15 @@ exports.getcart= async (req, res, next) => {
         pageTitle: 'Your Cart',
         products: [],
         totalPrice: 0,
-        isAuthenticated: req.session.isAuthenticated === true
+       
       });
     }
-
-    console.log(cart);
-
     res.render('shop/cart', {
       path: '/cart',
       pageTitle: 'Your Cart',
       products: cart.items,
       totalPrice: cart.TotalPrice,
-      isAuthenticated: req.session.isAuthenticated === true
+ 
     });
   } catch (error) {
     console.error('Error fetching cart:', error);
@@ -140,7 +131,7 @@ exports.postorder = async (req, res, next) => {
       TotalPrice:cart.TotalPrice,
       TotalQuantity:cart.TotalQuantity,
       User:{
-        name:user.name,
+        email:user.email,
         id:user._id
       }
 
@@ -157,7 +148,7 @@ exports.postorder = async (req, res, next) => {
 
 exports.postDeleteCart = async (req, res, next) => {
   const productId = req.body.productId;
-
+console.log(productId);
   const user = req.user;
   const cart=await Cart.findOne({"User.id":user._id});
   const product=await Product.findById(productId);
