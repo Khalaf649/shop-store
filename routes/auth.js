@@ -10,7 +10,11 @@ router.get('/login', authController.getLogIn);
 router.post('/login', authController.postLogIn);
 router.post('/logout',authController.postLogOut)
 router.post('/signup',authController.postSignUp)
-router.get('/signup',authController.getSignUp)
+router.get('/signup',authController.getSignUp);
+router.get('/reset',authController.getReset);
+router.post('/Reset',authController.postReset);
+router.get('/reset-password/:token',authController.getNewPassword);
+router.post('/new-password',authController.postNewPassword);
 // GET route for handling logout
 
 

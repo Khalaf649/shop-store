@@ -7,24 +7,7 @@ exports.getaddproduct = (req, res, next) => {
     editing:false,
   });
 }
-exports.PostEditProduct=async(req,res,next)=>{
 
-  const productID=req.body.productID;
-  const producttitle=req.body.title;
-  const productprice=req.body.price;
-  const productDescribtion=req.body.description;
-  const productimage=req.body.imageUrl;
- await Product.findByIdAndUpdate(productID,{
-  title:producttitle,
-  price:productprice,
-  description:productDescribtion,
-  imageUrl:productimage,
-  userId:req.session.user._id
-
- })
- res.redirect('/shop');
-
-}
 exports.postaddproduct = async(req, res, next) => {
   // Assuming req.session.user represents the currently authenticated user
     const product=new Product({
@@ -59,9 +42,7 @@ exports.geteditproduct = async(req, res, next) => {
   
 };
 exports.getproducts = async(req, res, next) => {
-  const products=await  Product.find()
-  // .select('title price -_id ').populate('userId','name email -_id');
-  console.log(products);
+  const products=await  Product.find({userId:req.user._id})
   res.render('admin/product-list', {
     prods: products,
     pageTitle: "Admin products",
@@ -75,10 +56,47 @@ exports.getproducts = async(req, res, next) => {
 exports.postDeleteProduct=async(req,res,next)=>{
   
   const id=req.body.productId;
+  const product=await Product.findById(id);
+  if(product.userId.toString()!==req.user._id.toString())
+    return res.redirect('/shop');
   await Product.findByIdAndDelete(id);
   
   res.redirect('/shop');
  
 
   
+}
+exports.PostEditProduct=async(req,res,next)=>{
+  try {
+    const productID=req.body.productID;
+    const product = await Product.findById(productID);
+    if (!product) {
+        req.flash('error', 'Product not found.');
+        return res.redirect('/shop');
+    }
+
+    // Authorization check
+    if (product.userId.toString() !== req.user._id.toString()) {
+      console.log("asasa")
+        req.flash('error', 'You are not authorized to edit this product.');
+        return res.redirect('/shop');
+    }
+
+    // Update the product
+    await Product.findByIdAndUpdate(productID, {
+        title:req.body. title,
+        price: req.body.price,
+        description: req.body.description,
+        imageUrl: req.body.imageUrl,
+        userId: req.user._id
+    });
+
+    req.flash('success', 'Product updated successfully.');
+    res.redirect('/shop');
+} catch (err) {
+    console.error('Error updating product:', err);
+    req.flash('error', 'An error occurred. Please try again later.');
+    res.redirect('/shop');
+}
+
 }

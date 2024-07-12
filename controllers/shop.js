@@ -22,7 +22,7 @@ exports.getOrder = async (req, res, next) => {
 }
 exports.showproducts = async (req, res, next) => {
 
-  const data = await Product.find()
+  const data = await Product.find({userId:req.user._id})
   res.render('shop/product-list', {
     prods: data,
     pageTitle: 'Products',
