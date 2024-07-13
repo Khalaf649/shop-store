@@ -9,6 +9,8 @@ module.exports = [
       if (userDoc) {
         throw new Error('The email address is already registered');
       }
+      else
+        return true;
     }),
 
   body('password').trim()
@@ -20,6 +22,7 @@ module.exports = [
       if (value !== req.body.password) {
         throw new Error('The two passwords do not match');
       }
+      else
       return true;
     })
 ];

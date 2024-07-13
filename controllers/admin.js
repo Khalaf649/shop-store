@@ -15,7 +15,8 @@ exports.postaddproduct = async (req, res, next) => {
   if(!errors.isEmpty())
   {
     req.flash('error',errors.array()[0].msg);
-    return res.status(402).redirect('/admin/addproduct')
+    return res.redirect('/admin/addproduct');
+    
   }
   const product = new Product({
     title: req.body.title,
@@ -76,13 +77,13 @@ exports.postDeleteProduct = async (req, res, next) => {
 }
 exports.PostEditProduct = async (req, res, next) => {
   const errors=validationResult(req);
-  if(!errors.isEmpty())
-  {
-    req.flash('error',errors.array()[0].msg);
-    return res.status(402).redirect('/admin/Edit-Product')
+  const productID = req.body.productID.toString();
+  console.log(productID)
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.status(402).redirect(`/admin/Edit-Product/${productID}/?edit=true`);
   }
   try {
-    const productID = req.body.productID;
     const product = await Product.findById(productID);
     if (!product) {
       req.flash('error', 'Product not found.');
@@ -91,7 +92,6 @@ exports.PostEditProduct = async (req, res, next) => {
 
     // Authorization check
     if (product.userId.toString() !== req.user._id.toString()) {
-      console.log("asasa")
       req.flash('error', 'You are not authorized to edit this product.');
       return res.redirect('/shop');
     }
@@ -104,12 +104,9 @@ exports.PostEditProduct = async (req, res, next) => {
       imageUrl: req.body.imageUrl,
       userId: req.user._id
     });
-
-    req.flash('success', 'Product updated successfully.');
     res.redirect('/shop');
   } catch (err) {
     console.error('Error updating product:', err);
-    req.flash('error', 'An error occurred. Please try again later.');
     res.redirect('/shop');
   }
 

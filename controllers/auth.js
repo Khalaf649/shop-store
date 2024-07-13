@@ -3,7 +3,7 @@ const Cart = require('../models/cart');
 const bcryptjs = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const {validationResult}=require('express-validator');
+const { validationResult } = require('express-validator');
 // Create a transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -23,10 +23,8 @@ exports.getLogIn = (req, res, next) => {
         path: '/login',
         pageTitle: 'Login',
         error: message,
-        oldEmail:req.flash('oldEmail'),
-        oldPassword:req.flash('oldPassword'),
-        validationErrors:req.flash('validationErrors')
-
+        oldEmail: req.flash('oldEmail'),
+        oldPassword: req.flash('oldPassword'),
     });
 }
 
@@ -40,10 +38,10 @@ exports.getSignUp = async (req, res, next) => {
         pageTitle: 'SignUp',
         path: '/SignUp',
         error: message,
-        oldEmail:req.flash('oldEmail'),
-        oldPassword:req.flash('oldPassword'),
-        oldConfirmedPassword:req.flash('oldConfirmedPassword'),
-        validationErrors:req.flash('validationErrors')
+        oldEmail: req.flash('oldEmail'),
+        oldPassword: req.flash('oldPassword'),
+        oldConfirmedPassword: req.flash('oldConfirmedPassword'),
+        validationErrors: req.flash('validationErrors')
     });
 }
 
@@ -51,16 +49,14 @@ exports.postSignUp = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
-      const errors=validationResult(req);
-      console.log(errors);
-      if (!errors.isEmpty()) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         req.flash('error', errors.array()[0].msg);
-        req.flash('oldEmail',email);
-        req.flash('oldPassword',password);
-        req.flash('oldConfirmedPassword',confirmPassword);
-        req.flash('validationErrors',errors.array());
+        req.flash('oldEmail', email);
+        req.flash('oldPassword', password);
+        req.flash('oldConfirmedPassword', confirmPassword);
         return res.status(402).redirect('/signup');
-      }
+    }
     const hashedPassword = await bcryptjs.hash(password, 12);
     const user = new User({
         email: email,
@@ -102,20 +98,19 @@ exports.postSignUp = async (req, res, next) => {
 exports.postLogIn = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user=await User.findOne({email:email});
-    const errors=validationResult(req);
-      console.log(errors);
-      if (!errors.isEmpty()) {
+    const user = await User.findOne({ email: email });
+    const errors = validationResult(req);
+    console.log(errors);
+    if (!errors.isEmpty()) {
         req.flash('error', errors.array()[0].msg);
-        req.flash('oldEmail',email);
-        req.flash('oldPassword',password);
-        req.flash('validationErrors',errors.array());
+        req.flash('oldEmail', email);
+        req.flash('oldPassword', password);
         return res.status(402).redirect('/login');
-      }
-      req.session.user = user;
-      req.session.isAuthenticated = 1;
-      await req.session.save();
-      res.redirect('/shop');
+    }
+    req.session.user = user;
+    req.session.isAuthenticated = 1;
+    await req.session.save();
+    res.redirect('/shop');
 }
 
 // Handle logout POST request
@@ -143,14 +138,13 @@ exports.getReset = async (req, res, next) => {
 exports.postReset = async (req, res, next) => {
     try {
         const token = await crypto.randomBytes(32).toString('hex');
-        const user=await User.findOne({email:req.body.email});
-        if(!user)
-        {
-            req.flash('error','no email with that');
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            req.flash('error', 'no email with that');
             return res.redirect('/reset');
         }
-        user.resetToken=token;
-        user.resetTokenExpiryDate=Date.now()+3600*1000;
+        user.resetToken = token;
+        user.resetTokenExpiryDate = Date.now() + 3600 * 1000;
         await user.save();
         console.log(token);
         const resetLink = `http://localhost:3000/reset-password/${token}`;
@@ -161,7 +155,7 @@ exports.postReset = async (req, res, next) => {
             text: `Click on the following link to reset your password: ${resetLink}`
 
         };
-    
+
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.log('Error sending email:', error);
@@ -201,7 +195,7 @@ exports.getNewPassword = async (req, res, next) => {
             pageTitle: 'New Password',
             error: message,
             userId: user._id.toString(),
-            PasswordToken:token
+            PasswordToken: token
         });
     } catch (err) {
         console.error(err);
