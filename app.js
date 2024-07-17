@@ -11,7 +11,7 @@ const shopRoutes = require('./routes/shop');
 const authRouter = require('./routes/auth');
 const errorController = require('./controllers/error');
 const csurf = require('csurf');
-const flash=require('connect-flash');
+const flash = require('connect-flash');
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -46,31 +46,33 @@ app.use((req, res, next) => {// keys in any rendering page
     next();
 });
 
-// User setup middleware
 app.use(async (req, res, next) => {
-    try {
-        if (req.session && req.session.user && req.session.user._id) {
-            const user = await User.findById(req.session.user._id);
-            if (user) {
-                req.user = user;
-            } else {
-                req.user = null;
-            }
-        } else {
-            req.user = null;
-        }
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        req.user = null;
+    if (!req.session.user) {
+        return next();
     }
-    next();
-});
+    try {
+        const user = await User.findById(req.session.user._id);
+        if (!user) {
+            return next();
+        }
+        req.user = user;
+        next();
+    }
+    catch (err) {
+        const error=new Error(err);
+        error.httpStatusCode=500;
+        return next(error);
+    }
+})
 
 // Routes
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRouter);
-
+app.get('/500', errorController.get505);
+app.use((error, req, res, next) => {
+    res.redirect('/500');
+})
 // 404 Error Handler
 app.use(errorController.get404);
 

@@ -4,3 +4,9 @@ exports.get404=(req, res, next) => {
      path:req.url
     });
    };
+   exports.get505=(req,res,next)=>{
+    res.status(500).render('500',{
+      pageTitle:'Error',
+      path:'/500'
+    })
+   }
