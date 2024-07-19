@@ -6,7 +6,6 @@ const signUpValidator=require('../validation/signUp');
 const signInValidator=require('../validation/signIn');
 // GET route for displaying the login form
 router.get('/login', authController.getLogIn);
-
 // POST route for handling login form submission
 router.post('/login', signInValidator,authController.postLogIn);
 router.post('/logout',authController.postLogOut)

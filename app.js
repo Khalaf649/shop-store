@@ -48,7 +48,7 @@ app.use((req, res, next) => {// keys in any rendering page
 
 app.use(async (req, res, next) => {
     if (!req.session.user) {
-        return next();
+        return next();// with the sync function there is no need to catch {return next(error)}
     }
     try {
         const user = await User.findById(req.session.user._id);

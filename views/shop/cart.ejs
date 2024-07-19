@@ -12,19 +12,16 @@
                 <h1><%= p.ProductId.title %></h1>
                 <h2>Quantity: <%= p.Quantity %></h2>
                 <!-- Add CSRF token to delete form -->
-                <form action="/cart-delete-item" method="POST">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <input type="hidden" name="productId" value="<%= p.ProductId._id %>">
-                    <button class="btn danger" type="submit">Delete</button>
-                </form>
-                
+                    <button class="btn danger" type="button" onclick="deleteFromCart(this)">Delete</button>
             </li>
             <% }) %>
         </ul>
         <hr>
         <div class="centered">
             <!-- Add CSRF token to order form -->
-            <form action="/order-now" method="POST">
+            <form id="order-form" action="/order-now" method="POST">
                 <button type="submit" class="btn">Order Now!</button>
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             </form>
@@ -35,4 +32,42 @@
     </main>
     <%- include('../includes/end.ejs') %>
 </body>
+<script>
+const deleteFromCart = async (btn) => {
+    const csrfToken = btn.previousElementSibling.previousElementSibling.value;
+    const productId = btn.previousElementSibling.value;
+    const productElement = btn.closest('li');
+
+    try {
+        const result = await fetch(`/cart-delete-item/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'csrf-token': csrfToken
+            }
+        });
+
+        if (result.ok) {
+            productElement.remove();
+            // Check if there are any items left in the cart
+            const cartItems = document.querySelectorAll('.cart__item');
+            if (cartItems.length === 0) {
+                // Remove the order form if no items are left
+                const orderForm = document.getElementById('order-form');
+                if (orderForm) {
+                    orderForm.remove();
+                }
+                // Display "No Products in Cart!" message
+                const mainElement = document.querySelector('main');
+                const noProductsMessage = document.createElement('h1');
+                noProductsMessage.textContent = 'No Products in Cart!';
+                mainElement.appendChild(noProductsMessage);
+            }
+        } else {
+            console.error('Failed to delete product from cart');
+        }
+    } catch (error) {
+        console.error('An error occurred while deleting the product from the cart:', error);
+    }
+}
+</script>
 </html>

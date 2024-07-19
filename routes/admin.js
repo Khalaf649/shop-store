@@ -11,6 +11,6 @@ const ProductValidatior=require('../validation/addProduct');
  router.post('/addproduct',isAuthenticated, ProductValidatior,adminContollers.postaddproduct);
  router.get('/products',isAuthenticated, adminContollers.getproducts);
  router.post('/Edit-Product',isAuthenticated,ProductValidatior, adminContollers.PostEditProduct);
- router.post('/Delete-Product', isAuthenticated,adminContollers.postDeleteProduct)
+ router.delete('/Delete-Product/:productId', isAuthenticated,adminContollers.DeleteProduct)
 module.exports = router;
 
